@@ -9,17 +9,18 @@ namespace sw_bot.srcs
 {
     public class ScreenCapture
     {
-        [DllImport("user32.dll")]
-        public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetWindowInfo(IntPtr hwnd, ref WINDOWINFO pwi);
         [DllImport("user32.dll")]
         public static extern bool PrintWindow(IntPtr hWnd, IntPtr hdcBlt, int nFlags);
 
         public static Bitmap PrintWindow(IntPtr hwnd)    
         {       
-            RECT rc;        
-            GetWindowRect(hwnd, out rc);
-
-            Bitmap bmp = new Bitmap(rc.Width, rc.Height, PixelFormat.Format32bppArgb);        
+            WINDOWINFO info = new WINDOWINFO();      
+            info.cbSize = (uint)Marshal.SizeOf(info); 
+            GetWindowInfo(hwnd, ref info);
+            Bitmap bmp = new Bitmap(info.rcWindow.Right - info.rcWindow.Left, info.rcWindow.Bottom - info.rcWindow.Top, PixelFormat.Format32bppArgb);        
             Graphics g = Graphics.FromImage(bmp);        
             IntPtr hdcBitmap = g.GetHdc();        
 
